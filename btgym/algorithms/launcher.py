@@ -27,7 +27,8 @@ import sys
 sys.path.insert(0,'..')
 
 import os
-import logging
+#import logging
+import logbook
 import time
 import psutil
 import glob
@@ -136,12 +137,19 @@ class Launcher():
         self.trainer_config['kwargs']['test_mode'] = self.test_mode
 
         # Logging config:
-        logging.basicConfig()
-        self.log = logging.getLogger('Launcher')
-        log_levels = [(0, 'WARNING'), (1, 'INFO'), (2, 'DEBUG'),]
+        #logging.basicConfig()
+        #self.log = logging.getLogger('Launcher')
+        #log_levels = [(0, 'WARNING'), (1, 'INFO'), (2, 'DEBUG'),]
+        #for key, level in log_levels:
+        #    if key == self.verbose:
+        #        self.log.setLevel(level)
+
+        self.log = logbook.Logger('AAC_Launcher')
+        log_levels = [(0, logbook.WARNING), (1, logbook.INFO), (2, logbook.DEBUG), ]
         for key, level in log_levels:
             if key == self.verbose:
-                self.log.setLevel(level)
+                # self.log.setLevel(level)
+                self.log.level = level
 
         # Seeding:
         if self.root_random_seed is not None:

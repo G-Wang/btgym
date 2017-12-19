@@ -18,6 +18,7 @@
 ###############################################################################
 
 import logging
+import logbook
 # logging.basicConfig(format='%(name)s: %(message)s')
 import time
 import zmq
@@ -181,12 +182,13 @@ class BTgymEnv(gym.Env):
         self.metadata = {'render.modes': self.render_modes}
 
         # Verbosity control:
-        if True: #self.log is None:
-            self.log = logging.getLogger('Env')
-            log_levels = [(0, 'WARNING'), (1, 'INFO'), (2, 'DEBUG'),]
-            for key, level in log_levels:
-                if key == self.verbose:
-                    self.log.setLevel(level)
+        #self.log = logging.getLogger('Env')
+        self.log = logbook.Logger('Env')
+        log_levels = [(0, logbook.WARNING), (1, logbook.INFO), (2, logbook.DEBUG),]
+        for key, level in log_levels:
+            if key == self.verbose:
+                #self.log.setLevel(level)
+                self.log.level = level
 
         # Network parameters:
         self.network_address += str(self.port)
