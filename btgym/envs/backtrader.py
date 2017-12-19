@@ -345,6 +345,7 @@ class BTgymEnv(gym.Env):
 
         # Finally:
         self.server_response = None
+        self.data_server_response = None
         self.env_response = None
 
         # If instance is datamaster - it may or may not want to launch self BTgymServer (can do it later via reset);
@@ -468,11 +469,16 @@ class BTgymEnv(gym.Env):
         Stops BT server process, releases network resources.
         """
         if self.server:
-
             if self._force_control_mode():
-                # In case server is running and client side is ok:
-                self.socket.send_pyobj({'ctrl': '_stop'})
-                self.server_response = self.socket.recv_pyobj()
+                try:
+                    # In case server is running and client side is ok:
+                    self.socket.send_pyobj({'ctrl': '_stop'})
+                    self.server_response = self.socket.recv_pyobj()
+
+                except:
+                    self.server.terminate()
+                    self.server.join()
+                    self.server_response = 'Server process terminated.'
 
             else:
                 self.server.terminate()
@@ -831,8 +837,15 @@ class BTgymEnv(gym.Env):
         if self.data_master:
             if self.data_server is not None and self.data_server.is_alive():
                 # In case server is running and is ok:
-                self.data_socket.send_pyobj({'ctrl': '_stop'})
-                self.data_server_response = self.data_socket.recv_pyobj()
+                try:  # to be nice
+                    self.data_socket.send_pyobj({'ctrl': '_stop'})
+                    self.data_server_response = self.data_socket.recv_pyobj()
+                    return
+
+                except:
+                    self.data_server.terminate()
+                    self.data_server.join()
+                    self.data_server_response = 'Data_server process terminated.'
 
             else:
                 self.data_server.terminate()
@@ -841,9 +854,9 @@ class BTgymEnv(gym.Env):
 
             self.log.info('{} Exit code: {}'.format(self.data_server_response, self.data_server.exitcode))
 
-        #if self.data_context:
-        #    self.data_context.destroy()
-        #    self.data_socket = None
+        if self.data_context:
+            self.data_context.destroy()
+            self.data_socket = None
 
     def _restart_data_server(self):
         """
